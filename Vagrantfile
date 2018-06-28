@@ -34,7 +34,7 @@ Vagrant.configure(2) do |config|
 
     config.vm.define name do |config|
       config.vm.hostname = fqdn
-      config.vm.network :private_network, ip: ip
+      config.vm.network :private_network, ip: ip, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh'
       config.vm.provision 'shell', path: 'provision-docker.sh'
       config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh'
