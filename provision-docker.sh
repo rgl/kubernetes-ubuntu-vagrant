@@ -12,13 +12,17 @@ apt-get install -y apt-transport-https software-properties-common
 wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
-apt-get install -y docker-ce
+apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # configure it.
+# see https://kubernetes.io/docs/setup/cri/
 systemctl stop docker
 cat >/etc/docker/daemon.json <<'EOF'
 {
     "debug": false,
+    "exec-opts": [
+        "native.cgroupdriver=systemd"
+    ],
     "labels": [
         "os=linux"
     ],
@@ -31,6 +35,18 @@ EOF
 sed -i -E 's,^(ExecStart=/usr/bin/dockerd).*,\1,' /lib/systemd/system/docker.service
 systemctl daemon-reload
 systemctl start docker
+
+# configure containerd.
+# see https://kubernetes.io/docs/setup/cri/
+cat >/etc/sysctl.d/99-kubernetes-cri.conf <<'EOF'
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+sysctl --system
+containerd config default >/etc/containerd/config.toml
+sed -i -E 's,^(\s*systemd_cgroup =).*,\1 true,' /etc/containerd/config.toml
+systemctl restart containerd
 
 # let the vagrant user manage docker.
 usermod -aG docker vagrant

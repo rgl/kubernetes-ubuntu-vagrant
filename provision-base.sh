@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eux
 
+node_role="$1"
+
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
 #     dpkg-preconfigure: unable to re-open stdin: No such file or directory
@@ -55,7 +57,8 @@ set completion-ignore-case on
 EOF
 
 # configure the motd.
-# NB this was generated at http://patorjk.com/software/taag/#p=display&f=Big&t=kubernetes.
+if [ "$node_role" == 'master' ]; then
+# NB this was generated at http://patorjk.com/software/taag/#p=display&f=Big&t=kubernetes%0Amaster.
 #    it could also be generated with figlet.org.
 cat >/etc/motd <<'EOF'
 
@@ -65,6 +68,31 @@ cat >/etc/motd <<'EOF'
  | |/ / | | | '_ \ / _ \ '__| '_ \ / _ \ __/ _ \/ __|
  |   <| |_| | |_) |  __/ |  | | | |  __/ ||  __/\__ \
  |_|\_\\__,_|_.__/ \___|_|  |_| |_|\___|\__\___||___/
+                     | |
+  _ __ ___   __ _ ___| |_ ___ _ __
+ | '_ ` _ \ / _` / __| __/ _ \ '__|
+ | | | | | | (_| \__ \ ||  __/ |
+ |_| |_| |_|\__,_|___/\__\___|_|
 
 
 EOF
+else
+# NB this was generated at http://patorjk.com/software/taag/#p=display&f=Big&t=kubernetes%0Amaster.
+#    it could also be generated with figlet.org.
+cat >/etc/motd <<'EOF'
+
+  _          _                          _
+ | |        | |                        | |
+ | | ___   _| |__   ___ _ __ _ __   ___| |_ ___  ___
+ | |/ / | | | '_ \ / _ \ '__| '_ \ / _ \ __/ _ \/ __|
+ |   <| |_| | |_) |  __/ |  | | | |  __/ ||  __/\__ \
+ |_|\_\\__,_|_.__/ \___|_|  |_| |_|\___|\__\___||___/
+                    | |
+ __      _____  _ __| | _____ _ __
+ \ \ /\ / / _ \| '__| |/ / _ \ '__|
+  \ V  V / (_) | |  |   <  __/ |
+   \_/\_/ \___/|_|  |_|\_\___|_|
+
+
+EOF
+fi
