@@ -4,6 +4,14 @@ ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
 require 'ipaddr'
 
+docker_version = '5:18.09.4~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+kubernetes_version = '1.14.0'
+kubeadm_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubeadm to known the available versions.
+kubelet_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubelet to known the available versions.
+kubectl_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubectl to known the available versions.
+kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml'
+kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml'
+
 number_of_master_nodes = 1
 number_of_worker_nodes = 2
 first_master_node_ip  = '10.11.0.101'
@@ -46,9 +54,22 @@ Vagrant.configure(2) do |config|
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh', args: ['master']
-      config.vm.provision 'shell', path: 'provision-docker.sh'
-      config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [ip]
-      config.vm.provision 'shell', path: 'provision-kubernetes-master.sh', args: [ip, pod_network_cidr, service_cidr, service_dns_domain]
+      config.vm.provision 'shell', path: 'provision-docker.sh', args: [docker_version]
+      config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [
+        ip,
+        kubeadm_version,
+        kubelet_version,
+        kubectl_version,
+      ]
+      config.vm.provision 'shell', path: 'provision-kubernetes-master.sh', args: [
+        ip,
+        pod_network_cidr,
+        service_cidr,
+        service_dns_domain,
+        kubernetes_version,
+        kuberouter_url,
+        kubernetes_dashboard_url,
+      ]
     end
   end
 
@@ -67,8 +88,13 @@ Vagrant.configure(2) do |config|
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh', args: ['worker']
-      config.vm.provision 'shell', path: 'provision-docker.sh'
-      config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [ip]
+      config.vm.provision 'shell', path: 'provision-docker.sh', args: [docker_version]
+      config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [
+        ip,
+        kubeadm_version,
+        kubelet_version,
+        kubectl_version,
+      ]
       config.vm.provision 'shell', path: 'provision-kubernetes-worker.sh'
     end
   end

@@ -1,14 +1,18 @@
 #!/bin/bash
 set -eux
 
-apiserver_advertise_address=$1
-pod_network_cidr=$2
-service_cidr=$3
-service_dns_domain=$4
+apiserver_advertise_address=$1; shift || true
+pod_network_cidr=$1; shift || true
+service_cidr=$1; shift || true
+service_dns_domain=$1; shift || true
+kubernetes_version="${1:-1.14.0}"; shift || true
+kuberouter_url="${1:-https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml}"; shift || true
+kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml}"; shift || true
 
 # initialize kubernetes.
 mkdir -p /vagrant/tmp
 kubeadm init \
+    --kubernetes-version=$kubernetes_version \
     --apiserver-advertise-address=$apiserver_advertise_address \
     --pod-network-cidr=$pod_network_cidr \
     --service-cidr=$service_cidr \
@@ -28,11 +32,13 @@ done
 # also save the kubectl configuration on the host, so we can access it there.
 cp /etc/kubernetes/admin.conf /vagrant/tmp
 
+# uncomment the next line if you want let the master node run user pods (not recommended).
+#kubectl taint nodes --all node-role.kubernetes.io/master-
+
 # install the kube-router cni addon as the pod network driver.
 # see https://github.com/cloudnativelabs/kube-router
 # see https://github.com/cloudnativelabs/kube-router/blob/master/Documentation/kubeadm.md
-wget -q https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
-kubectl apply -f kubeadm-kuberouter.yaml
+kubectl apply -f "$kuberouter_url"
 
 # wait for this node to be Ready.
 # e.g. km1     Ready     master    35m       v1.14.0
@@ -44,19 +50,19 @@ $SHELL -c 'while [ -z "$(kubectl get pods --selector k8s-app=kube-dns --namespac
 
 # install the kubernetes dashboard.
 # see https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+kubectl apply -f "$kubernetes_dashboard_url"
 
 # create the admin user.
 # see https://github.com/kubernetes/dashboard/wiki/Creating-sample-user
 # see https://github.com/kubernetes/dashboard/wiki/Access-control
-cat <<'EOF' | kubectl apply -f -
+kubectl apply -f - <<'EOF'
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: admin
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: admin
@@ -82,11 +88,20 @@ kubectl \
 kubectl get nodes -o wide
 kubectl get pods --all-namespaces
 
-# show cluster-info.
+# kubernetes info.
+kubectl version --short
 kubectl cluster-info
+#kubectl get nodes -o wide
+#kubectl get pods --all-namespaces
+kubectl get all --all-namespaces
 
-# uncomment the next line if you want let the master node run user pods (not recommended).
-#kubectl taint nodes --all node-role.kubernetes.io/master-
+# rbac info.
+kubectl get serviceaccount --all-namespaces
+kubectl get role --all-namespaces
+kubectl get rolebinding --all-namespaces
+kubectl get rolebinding --all-namespaces -o json | jq .items[].subjects
+kubectl get clusterrole --all-namespaces
+kubectl get clusterrolebinding --all-namespaces
 
 # list bootstrap tokens.
 kubeadm token list

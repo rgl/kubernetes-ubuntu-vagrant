@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eux
 
+# NB execute apt-cache madison docker-ce to known the available versions.
+docker_version="${1:-5:18.09.8~3-0~ubuntu-bionic}"; shift || true
+
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
 #     dpkg-preconfigure: unable to re-open stdin: No such file or directory
@@ -12,7 +15,8 @@ apt-get install -y apt-transport-https software-properties-common
 wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io
+apt-get install -y "docker-ce=$docker_version" "docker-ce-cli=$docker_version" containerd.io
+apt-mark hold docker-ce docker-ce-cli
 
 # configure it.
 # see https://kubernetes.io/docs/setup/cri/

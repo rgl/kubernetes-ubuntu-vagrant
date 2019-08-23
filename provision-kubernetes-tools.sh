@@ -1,7 +1,10 @@
 #!/bin/bash
 set -eux
 
-node_ip=$1
+node_ip=$1; shift || true
+kubeadm_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubeadm to known the available versions.
+kubelet_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubelet to known the available versions.
+kubectl_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubectl to known the available versions.
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
@@ -15,7 +18,8 @@ export DEBIAN_FRONTEND=noninteractive
 wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 add-apt-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
 apt-get update
-apt-get install -y kubelet kubeadm kubectl
+apt-get install -y "kubeadm=$kubeadm_version" "kubelet=$kubelet_version" "kubectl=$kubectl_version"
+apt-mark hold kubeadm kubelet kubectl
 
 # make sure kublet uses:
 #   1. the same cgroup driver as docker.
