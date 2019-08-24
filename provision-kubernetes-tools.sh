@@ -2,9 +2,9 @@
 set -eux
 
 node_ip=$1; shift || true
-kubeadm_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubeadm to known the available versions.
-kubelet_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubelet to known the available versions.
-kubectl_version="${1:-1.14.0-00}"; shift || true # NB execute apt-cache madison kubectl to known the available versions.
+kubeadm_version="${1:-1.15.3-00}"; shift || true # NB execute apt-cache madison kubeadm to known the available versions.
+kubelet_version="${1:-1.15.3-00}"; shift || true # NB execute apt-cache madison kubelet to known the available versions.
+kubectl_version="${1:-1.15.3-00}"; shift || true # NB execute apt-cache madison kubectl to known the available versions.
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:

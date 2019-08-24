@@ -5,11 +5,12 @@ apiserver_advertise_address=$1; shift || true
 pod_network_cidr=$1; shift || true
 service_cidr=$1; shift || true
 service_dns_domain=$1; shift || true
-kubernetes_version="${1:-1.14.0}"; shift || true
+kubernetes_version="${1:-1.15.3}"; shift || true
 kuberouter_url="${1:-https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml}"; shift || true
-kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml}"; shift || true
+kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta3/aio/deploy/recommended.yaml}"; shift || true
 
 # initialize kubernetes.
+# TODO add --skip-phases=addon/kube-proxy and use kuberouter instead OR use kube-proxy IPVS mode?
 mkdir -p /vagrant/tmp
 kubeadm init \
     --kubernetes-version=$kubernetes_version \
@@ -41,7 +42,7 @@ cp /etc/kubernetes/admin.conf /vagrant/tmp
 kubectl apply -f "$kuberouter_url"
 
 # wait for this node to be Ready.
-# e.g. km1     Ready     master    35m       v1.14.0
+# e.g. km1     Ready     master    35m       v1.15.3
 $SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 
 # wait for the kube-dns pod to be Running.
@@ -71,9 +72,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: admin
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: admin
+    namespace: kube-system
 EOF
 # save the admin token.
 kubectl \

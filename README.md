@@ -32,7 +32,7 @@ kubectl proxy &
 
 Then access the kubernetes dashboard at:
 
-    http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+    http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 select `Token` and use the token from the `tmp/admin-token.txt` file.
 
