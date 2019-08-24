@@ -4,7 +4,7 @@ ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
 require 'ipaddr'
 
-docker_version = '5:18.09.4~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+docker_version = '5:18.09.8~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
 kubernetes_version = '1.14.0'
 kubeadm_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubeadm to known the available versions.
 kubelet_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubelet to known the available versions.
