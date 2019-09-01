@@ -1,4 +1,4 @@
-# to make sure the k8s-1 node is created before the other nodes, we
+# to make sure the km1 node is created before the other nodes, we
 # have to force a --no-parallel execution.
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
@@ -10,7 +10,7 @@ kubeadm_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kube
 kubelet_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubelet to known the available versions.
 kubectl_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubectl to known the available versions.
 kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml'
-kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta3/aio/deploy/recommended.yaml'
+kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml'
 
 number_of_master_nodes = 1
 number_of_worker_nodes = 2

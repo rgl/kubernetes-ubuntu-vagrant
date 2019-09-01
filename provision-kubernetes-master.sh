@@ -7,7 +7,7 @@ service_cidr=$1; shift || true
 service_dns_domain=$1; shift || true
 kubernetes_version="${1:-1.15.3}"; shift || true
 kuberouter_url="${1:-https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml}"; shift || true
-kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta3/aio/deploy/recommended.yaml}"; shift || true
+kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml}"; shift || true
 
 # initialize kubernetes.
 # TODO add --skip-phases=addon/kube-proxy and use kuberouter instead OR use kube-proxy IPVS mode?
