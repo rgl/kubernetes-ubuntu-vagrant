@@ -42,11 +42,16 @@ cat >/etc/docker/daemon.json <<EOF
     ]
 }
 EOF
-cp -p /lib/systemd/system/docker.service{,.orig}
-sed -i -E 's,^(ExecStart=/usr/bin/dockerd).*,\1,' /lib/systemd/system/docker.service
-diff -u /lib/systemd/system/docker.service{.orig,} || true
+# start docker without any command line flags as its entirely configured from daemon.json.
+install -d /etc/systemd/system/docker.service.d
+cat >/etc/systemd/system/docker.service.d/override.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd
+EOF
 systemctl daemon-reload
 systemctl start docker
+systemctl cat docker
 # validate that docker is using the expected cgroup driver.
 docker_cgroup_driver="$(docker info -f '{{.CgroupDriver}}')"
 if [ "$docker_cgroup_driver" != "$cgroup_driver" ]; then
