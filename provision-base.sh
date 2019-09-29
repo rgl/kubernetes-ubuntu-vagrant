@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 
-node_role="$1"
+node_role="${1:-}"; shift || true
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
@@ -76,7 +76,8 @@ cat >/etc/motd <<'EOF'
 
 
 EOF
-else
+fi
+if [ "$node_role" == 'worker' ]; then
 # NB this was generated at http://patorjk.com/software/taag/#p=display&f=Big&t=kubernetes%0Amaster.
 #    it could also be generated with figlet.org.
 cat >/etc/motd <<'EOF'

@@ -8,17 +8,15 @@ Install kublectl in your machine, e.g. on Ubuntu:
 
 ```bash
 wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-# NB we add the -xenial (16.04) repository instead of $(lsb_release -cs)
-#    because kubernetes does not yet have a package for bionic (18.04).
 add-apt-repository "deb http://apt.kubernetes.io/ $(lsb_release -cs) main"
 apt-get install -y kubectl
 kubectl version --client
 ```
 
-Launch a kubernetes master (`km1`) and a worker (`kw1`):
+Launch the pandora box, a kubernetes master (`km1`) and a worker (`kw1`):
 
 ```bash
-vagrant up km1 kw1
+vagrant up pandora km1 kw1
 ```
 
 # Kubernetes proxy
