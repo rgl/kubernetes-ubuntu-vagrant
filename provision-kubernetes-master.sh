@@ -5,7 +5,7 @@ apiserver_advertise_address=$1; shift || true
 pod_network_cidr=$1; shift || true
 service_cidr=$1; shift || true
 service_dns_domain=$1; shift || true
-kubernetes_version="${1:-1.15.3}"; shift || true
+kubernetes_version="${1:-1.16.0}"; shift || true
 kuberouter_url="${1:-https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml}"; shift || true
 kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml}"; shift || true
 
@@ -42,7 +42,7 @@ cp /etc/kubernetes/admin.conf /vagrant/tmp
 kubectl apply -f "$kuberouter_url"
 
 # wait for this node to be Ready.
-# e.g. km1     Ready     master    35m       v1.15.3
+# e.g. km1     Ready     master    35m       v1.16.0
 $SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 
 # wait for the kube-dns pod to be Running.

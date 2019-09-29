@@ -4,12 +4,12 @@ ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
 require 'ipaddr'
 
-docker_version = '5:18.09.8~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
-kubernetes_version = '1.15.3'
+docker_version = '5:19.03.2~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+kubernetes_version = '1.16.0'
 kubeadm_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubeadm to known the available versions.
 kubelet_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubelet to known the available versions.
 kubectl_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubectl to known the available versions.
-kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml'
+kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/d6f9f31a7b8075fad418517860fede7a53adf7b6/daemonset/kubeadm-kuberouter.yaml'
 kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml'
 
 number_of_master_nodes = 1
