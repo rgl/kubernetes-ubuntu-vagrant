@@ -6,7 +6,7 @@ kubernetes_control_plane_fqdn="${1:-k8s.example.test}"; shift || true
 kubernetes_master_node_ip_addresses="${1:-10.11.0.101,10.11.0.102,10.11.0.103}"; shift || true
 
 # install and configure haproxy as L4 TCP forwarding load balancer.
-# see https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-option%20httpchk
+# see https://cbonte.github.io/haproxy-dconv/2.0/configuration.html#4-option%20httpchk
 apt-get install -y haproxy
 haproxy -vv
 mv /etc/haproxy/haproxy.cfg{,.ubuntu}

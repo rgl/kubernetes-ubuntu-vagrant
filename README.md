@@ -7,8 +7,9 @@ Install the [Ubuntu Base Box](https://github.com/rgl/ubuntu-vagrant).
 Install kublectl in your machine, e.g. on Ubuntu:
 
 ```bash
-wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-add-apt-repository "deb http://apt.kubernetes.io/ $(lsb_release -cs) main"
+wget -qO /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo 'deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main' >/etc/apt/sources.list.d/kubernetes.list
+apt-get update
 apt-get install -y kubectl
 kubectl version --client
 ```
