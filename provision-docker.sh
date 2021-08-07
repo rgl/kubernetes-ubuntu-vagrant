@@ -1,8 +1,8 @@
 #!/bin/bash
-set -eux
+set -euxo pipefail
 
 # NB execute apt-cache madison docker-ce to known the available versions.
-docker_version="${1:-5:18.09.8~3-0~ubuntu-bionic}"; shift || true
+docker_version="${1:-20.10.8}"; shift || true
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
@@ -15,31 +15,58 @@ apt-get install -y apt-transport-https software-properties-common
 wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
+docker_version="$(apt-cache madison docker-ce | awk "/$docker_version~/{print \$3}")"
 apt-get install -y "docker-ce=$docker_version" "docker-ce-cli=$docker_version" containerd.io
 apt-mark hold docker-ce docker-ce-cli
 
+# stop docker and containerd.
+systemctl stop docker
+systemctl stop containerd
+
+# use the systemd cgroup driver.
+# NB by default docker uses the containerd runc runtime.
+cgroup_driver='systemd'
+
+# configure containerd.
+# see https://kubernetes.io/docs/setup/cri/
+cat >/etc/sysctl.d/99-kubernetes-cri.conf <<'EOF'
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+sysctl --system
+containerd config default >/etc/containerd/config.toml
+cp -p /etc/containerd/config.toml{,.orig}
+if [ "$cgroup_driver" = 'systemd' ]; then
+    patch -d / -p0 </vagrant/containerd-config.toml.patch
+else
+    patch -d / -R -p0 </vagrant/containerd-config.toml.patch
+fi
+diff -u /etc/containerd/config.toml{.orig,} || true
+systemctl restart containerd
+
 # configure it.
 # see https://kubernetes.io/docs/setup/cri/
-# NB by default docker uses the containerd runc runtime.
-# NB this uses the cgroupfs driver due to https://github.com/kubernetes/kubernetes/issues/76531
-systemctl stop docker
-#cgroup_driver='systemd'
-cgroup_driver='cgroupfs'
 cat >/etc/docker/daemon.json <<EOF
 {
+    "experimental": false,
     "debug": false,
-    "default-runtime": "runc",
-    "containerd": "/run/containerd/containerd.sock",
     "exec-opts": [
         "native.cgroupdriver=$cgroup_driver"
     ],
+    "features": {
+        "buildkit": true
+    },
+    "log-driver": "journald",
     "labels": [
         "os=linux"
     ],
     "hosts": [
         "fd://",
         "tcp://0.0.0.0:2375"
-    ]
+    ],
+    "default-runtime": "runc",
+    "containerd": "/run/containerd/containerd.sock"
 }
 EOF
 # start docker without any command line flags as its entirely configured from daemon.json.
@@ -58,24 +85,6 @@ if [ "$docker_cgroup_driver" != "$cgroup_driver" ]; then
     echo "ERROR: Cgroup driver MUST be $cgroup_driver, but its $docker_cgroup_driver"
     exit 1
 fi
-
-# configure containerd.
-# see https://kubernetes.io/docs/setup/cri/
-cat >/etc/sysctl.d/99-kubernetes-cri.conf <<'EOF'
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-iptables  = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-sysctl --system
-containerd config default >/etc/containerd/config.toml
-cp -p /etc/containerd/config.toml{,.orig}
-if [ "$cgroup_driver" = 'systemd' ]; then
-    sed -i -E 's,^(\s*systemd_cgroup =).*,\1 true,' /etc/containerd/config.toml
-else
-    sed -i -E 's,^(\s*systemd_cgroup =).*,\1 false,' /etc/containerd/config.toml
-fi
-diff -u /etc/containerd/config.toml{.orig,} || true
-systemctl restart containerd
 
 # let the vagrant user manage docker.
 usermod -aG docker vagrant

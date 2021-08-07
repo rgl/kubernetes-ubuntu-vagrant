@@ -80,7 +80,7 @@ su pdns \
 
 # load the $k8s_domain zone into the database.
 # NB we use 1m for testing purposes, in real world, this should probably be 10m+.
-pdnsutil load-zone $k0s_domain <(echo "
+pdnsutil load-zone $k8s_domain <(echo "
 \$TTL 1m
 \$ORIGIN $k8s_domain. ; base domain-name
 @               IN      SOA     a.ns    hostmaster (

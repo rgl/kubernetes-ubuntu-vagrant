@@ -20,6 +20,16 @@ Launch the pandora box, a kubernetes master (`km1`) and a worker (`kw1`):
 vagrant up pandora km1 kw1
 ```
 
+Add the following entries to your `/etc/hosts` file:
+
+```plain
+10.11.0.3 k8s.example.test
+```
+
+Access the HAProxy status page at:
+
+http://k8s.example.test:9000
+
 # Kubernetes proxy
 
 Launch the kubernetes api server proxy in background:
@@ -48,29 +58,33 @@ apt-get install -y httpie
 Launch an example Deployment and wait for it to be up:
 
 ```bash
-kubectl run kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1 --port=8080
+kubectl create deployment kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1
+kubectl get deployments
 kubectl rollout status deployment kubernetes-bootcamp
 ```
 
 Access it by http through the kubernetes proxy:
 
 ```bash
-export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | grep kubernetes-bootcamp-)
-echo Name of the Pod: $POD_NAME
-http http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/proxy/ # this accesses an http endpoint inside the pod.
+export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | grep kubernetes-bootcamp)
+echo "Name of the Pod: $POD_NAME"
+# get the pod definition:
+http http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME
+# access the pod http endpoint at port 8080:
+http http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME:8080/proxy/
 ```
 
 Execute a command inside the pod:
 
 ```bash
-kubectl exec $POD_NAME env
+kubectl exec $POD_NAME -- env
 kubectl exec $POD_NAME -- curl --verbose --silent localhost:8080
 ```
 
 Launch an interactive shell inside the pod:
 
 ```bash
-kubectl exec -ti $POD_NAME bash
+kubectl exec -ti $POD_NAME -- bash
 ```
 
 Show information about the pod:
@@ -95,6 +109,12 @@ echo NODE_PORT=$NODE_PORT
 http http://10.11.0.201:$NODE_PORT
 ```
 
+You can also access the service trought the `kubectl proxy` proxy:
+
+```bash
+http http://localhost:8001/api/v1/namespaces/default/services/kubernetes-bootcamp:8080/proxy/
+```
+
 Create multiple instances (aka replicas) of the application:
 
 ```bash
@@ -104,6 +124,7 @@ kubectl get deployments
 kubectl get pods -o wide
 kubectl describe deployment kubernetes-bootcamp
 kubectl describe service kubernetes-bootcamp
+kubectl get endpoints kubernetes-bootcamp -o yaml
 ```
 
 And access the Service multiple times to see the request being handled by different containers:

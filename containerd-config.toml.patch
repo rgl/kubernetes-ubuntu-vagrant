@@ -1,0 +1,11 @@
+# see https://github.com/containerd/containerd/issues/4203#issuecomment-651532765
+--- /etc/containerd/config.toml.orig	2021-06-01 18:41:59.302722374 +0100
++++ /etc/containerd/config.toml	2021-06-01 19:57:37.017870698 +0100
+@@ -94,6 +94,7 @@
+           privileged_without_host_devices = false
+           base_runtime_spec = ""
+           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
++            SystemdCgroup = true
+     [plugins."io.containerd.grpc.v1.cri".cni]
+       bin_dir = "/opt/cni/bin"
+       conf_dir = "/etc/cni/net.d"

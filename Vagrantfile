@@ -4,13 +4,14 @@ ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
 require 'ipaddr'
 
-docker_version = '5:19.03.2~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
-kubernetes_version = '1.16.0'
-kubeadm_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubeadm to known the available versions.
-kubelet_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubelet to known the available versions.
-kubectl_version = "#{kubernetes_version}-00" # NB execute apt-cache madison kubectl to known the available versions.
-kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/d6f9f31a7b8075fad418517860fede7a53adf7b6/daemonset/kubeadm-kuberouter.yaml'
-kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml'
+docker_version = '20.10.8' # NB execute apt-cache madison docker-ce to known the available versions.
+containerd_version = '1.4.9' # NB execute apt-cache madison containerd.io to known the available versions.
+kubernetes_version = '1.22.0'
+kubeadm_version = kubernetes_version # NB execute apt-cache madison kubeadm to known the available versions.
+kubelet_version = kubernetes_version # NB execute apt-cache madison kubelet to known the available versions.
+kubectl_version = kubernetes_version # NB execute apt-cache madison kubectl to known the available versions.
+kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.0/daemonset/kubeadm-kuberouter.yaml' # see https://github.com/cloudnativelabs/kube-router/releases
+kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml' # see https://github.com/kubernetes/dashboard/releases
 
 number_of_master_nodes = 3
 number_of_worker_nodes = 2
@@ -80,16 +81,16 @@ Vagrant.configure(2) do |config|
     config.vm.define name do |config|
       # NB 512M of memory is not enough to run a kubernetes master.
       config.vm.provider 'libvirt' do |lv, config|
-        lv.memory = 1024
+        lv.memory = 2*1024
       end
       config.vm.provider 'virtualbox' do |vb|
-        vb.memory = 1024
+        vb.memory = 2*1024
       end
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh', args: ['master']
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [pandora_ip_address]
-      config.vm.provision 'shell', path: 'provision-docker.sh', args: [docker_version]
+      config.vm.provision 'shell', path: 'provision-containerd.sh', args: [containerd_version]
       config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [
         ip,
         kubeadm_version,
@@ -126,7 +127,7 @@ Vagrant.configure(2) do |config|
       config.vm.network :private_network, ip: ip, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh', args: ['worker']
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [pandora_ip_address]
-      config.vm.provision 'shell', path: 'provision-docker.sh', args: [docker_version]
+      config.vm.provision 'shell', path: 'provision-containerd.sh', args: [containerd_version]
       config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [
         ip,
         kubeadm_version,
