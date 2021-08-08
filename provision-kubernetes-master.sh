@@ -8,13 +8,15 @@ service_cidr=$1; shift || true
 service_dns_domain=$1; shift || true
 kubernetes_version="${1:-1.22.0}"; shift || true
 kubernetes_control_plane_endpoint="${1:-k8s.example.test:443}"; shift || true
-kuberouter_url="${1:-https://raw.githubusercontent.com/cloudnativelabs/kube-router/v0.3.2/daemonset/kubeadm-kuberouter.yaml}"; shift || true
-kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml}"; shift || true
+kuberouter_version="${1:-v1.3.0}"; shift || true
+kubernetes_dashboard_url="${1:-https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml}"; shift || true
+
+kuberouter_url="https://raw.githubusercontent.com/cloudnativelabs/kube-router/$kuberouter_version/daemonset/kubeadm-kuberouter-all-features.yaml"
 
 if [ "$master_index" == '0' ]; then
 # initialize kubernetes.
-# TODO add --skip-phases=addon/kube-proxy and use kuberouter instead OR use kube-proxy IPVS mode?
 # see https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
+# see https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
 mkdir -p /vagrant/tmp
 kubeadm init \
     --kubernetes-version=$kubernetes_version \
@@ -23,12 +25,15 @@ kubeadm init \
     --service-cidr=$service_cidr \
     --service-dns-domain=$service_dns_domain \
     --control-plane-endpoint=$kubernetes_control_plane_endpoint \
+    --skip-phases=addon/kube-proxy \
     --upload-certs \
     | tee kubeadm-init.log
 
 # save the kubeadm join command which will later be used to add
 # the workers to the cluster. this token is valid for one day.
-kubeadm token create --print-join-command >/vagrant/tmp/kubeadm-join.sh
+cat >/vagrant/tmp/kubeadm-join.sh <<EOF
+$(kubeadm token create --print-join-command | tr '\n' ' ')
+EOF
 
 # save the kubeadm join command to join other master nodes.
 #
@@ -112,11 +117,26 @@ cp /etc/kubernetes/admin.conf /vagrant/tmp
 # uncomment the next line if you want let the master node run user pods (not recommended).
 #kubectl taint nodes --all node-role.kubernetes.io/master-
 
-# install the kube-router cni addon as the pod network driver.
+# show the in-cluster kubeadm configuration.
+kubectl get configmap -n kube-system kubeadm-config -o yaml
+
+# create the kube-proxy configmap with the admin kubeconfig.
+# NB this is required to workaround https://github.com/cloudnativelabs/kube-router/issues/859.
+# NB this has a side-effect that shows an warning when joining a worker node:
+#     W0808 11:59:38.772103    4853 configset.go:77] Warning: No kubeproxy.config.k8s.io/v1alpha1 config is loaded. Continuing without it: configmaps "kube-proxy" is forbidden: User "system:bootstrap:p16khe" cannot get resource "configmaps" in API group "" in the namespace "kube-system"
+kubectl create configmap \
+  -n kube-system \
+  kube-proxy \
+  --from-file=kubeconfig.conf=/etc/kubernetes/admin.conf
+
+# install the kube-router cni addon as the cluster IPVS/LVS based Service proxy,
+# Network Policy Controller (aka firewall) and Pod Networking.
 # see https://github.com/cloudnativelabs/kube-router
-# see https://github.com/cloudnativelabs/kube-router/blob/master/Documentation/kubeadm.md
-kubectl apply -f "$kuberouter_url"
-# TODO use the whole kube-route shebang with kubeadm-kuberouter-all-features.yaml?
+# see https://github.com/cloudnativelabs/kube-router/blob/master/docs/kubeadm.md
+wget -qO- "$kuberouter_url" \
+  | sed -E s",(image:\s*.+/cloudnativelabs/kube-router)$,\1:$kuberouter_version,g" \
+  >/vagrant/tmp/kube-router.yaml
+kubectl apply -f /vagrant/tmp/kube-router.yaml
 
 # wait for this node to be Ready.
 # e.g. km1     Ready     master    35m       v1.22.0
@@ -178,14 +198,12 @@ fi
 
 # list all nodes and pods.
 kubectl get nodes -o wide
-kubectl get pods --all-namespaces
+kubectl get pods -o wide --all-namespaces
 
 # kubernetes info.
 kubectl version --short
 kubectl cluster-info
 crictl info
-#kubectl get nodes -o wide
-#kubectl get pods --all-namespaces
 kubectl get all --all-namespaces
 crictl ps
 

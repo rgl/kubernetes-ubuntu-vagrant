@@ -151,3 +151,7 @@ kubectl delete deployment kubernetes-bootcamp
 kubectl delete service kubernetes-bootcamp
 kubectl get all
 ```
+
+# Troubleshoot
+
+* [kube-router pod toolbox](https://github.com/cloudnativelabs/kube-router/blob/master/docs/pod-toolbox.md)

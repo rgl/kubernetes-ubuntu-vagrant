@@ -6,11 +6,11 @@ require 'ipaddr'
 
 docker_version = '20.10.8' # NB execute apt-cache madison docker-ce to known the available versions.
 containerd_version = '1.4.9' # NB execute apt-cache madison containerd.io to known the available versions.
-kubernetes_version = '1.22.0'
+kubernetes_version = '1.22.0' # NB execute apt-cache madison kubeadm to known the available versions.
 kubeadm_version = kubernetes_version # NB execute apt-cache madison kubeadm to known the available versions.
 kubelet_version = kubernetes_version # NB execute apt-cache madison kubelet to known the available versions.
 kubectl_version = kubernetes_version # NB execute apt-cache madison kubectl to known the available versions.
-kuberouter_url = 'https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.0/daemonset/kubeadm-kuberouter.yaml' # see https://github.com/cloudnativelabs/kube-router/releases
+kuberouter_version = 'v1.3.0' # see https://github.com/cloudnativelabs/kube-router/releases
 kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml' # see https://github.com/kubernetes/dashboard/releases
 
 number_of_master_nodes = 3
@@ -105,7 +105,7 @@ Vagrant.configure(2) do |config|
         service_dns_domain,
         kubernetes_version,
         kubernetes_control_plane_endpoint,
-        kuberouter_url,
+        kuberouter_version,
         kubernetes_dashboard_url,
       ]
     end
