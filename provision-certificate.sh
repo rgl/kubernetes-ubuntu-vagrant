@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 domain=$1
 ca_file_name='example-ca'

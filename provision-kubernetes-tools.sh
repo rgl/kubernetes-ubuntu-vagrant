@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 node_ip=$1; shift || true
 kubeadm_version="${1:-1.22.0}"; shift || true # NB execute apt-cache madison kubeadm to known the available versions.

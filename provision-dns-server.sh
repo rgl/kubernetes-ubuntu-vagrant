@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 pandora_ip_address="${1:-10.1.0.2}"; shift || true
 pandora_domain="${1:-pandora.example.test}"; shift || true

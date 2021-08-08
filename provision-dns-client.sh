@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 dns_server_ip_address="${1:-10.1.0.2}"; shift || true
 

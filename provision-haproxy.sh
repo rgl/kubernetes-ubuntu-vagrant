@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 kubernetes_control_plane_ip_address="${1:-10.11.0.3}"; shift || true
 kubernetes_control_plane_fqdn="${1:-k8s.example.test}"; shift || true

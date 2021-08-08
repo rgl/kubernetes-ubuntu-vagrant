@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 master_index="${1:-1}"; shift || true
 apiserver_advertise_address=$1; shift || true

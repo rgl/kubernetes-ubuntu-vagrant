@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 # NB execute apt-cache madison containerd.io to known the available versions.
 containerd_version="${1:-1.4.9}"; shift || true

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 node_role="${1:-}"; shift || true
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 # NB execute apt-cache madison docker-ce to known the available versions.
 docker_version="${1:-20.10.8}"; shift || true
