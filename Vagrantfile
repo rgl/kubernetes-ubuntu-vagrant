@@ -11,6 +11,7 @@ kubeadm_version = kubernetes_version # NB execute apt-cache madison kubeadm to k
 kubelet_version = kubernetes_version # NB execute apt-cache madison kubelet to known the available versions.
 kubectl_version = kubernetes_version # NB execute apt-cache madison kubectl to known the available versions.
 etcdctl_version = 'v3.5.0' # see https://github.com/etcd-io/etcd/releases BUT make sure you use the same version as k8s.
+k9s_version = 'v0.24.14' # see https://github.com/derailed/k9s/releases
 kuberouter_version = 'v1.3.0' # see https://github.com/cloudnativelabs/kube-router/releases
 kubernetes_dashboard_url = 'https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml' # see https://github.com/kubernetes/dashboard/releases
 
@@ -93,6 +94,7 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-containerd.sh', args: [containerd_version]
       config.vm.provision 'shell', path: 'provision-etcdctl.sh', args: [etcdctl_version]
+      config.vm.provision 'shell', path: 'provision-k9s.sh', args: [k9s_version]
       config.vm.provision 'shell', path: 'provision-kubernetes-tools.sh', args: [
         ip,
         kubeadm_version,
