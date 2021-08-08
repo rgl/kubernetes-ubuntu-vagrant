@@ -196,6 +196,22 @@ for home in /root /home/vagrant; do
 done
 fi
 
+# show the etcd nodes.
+etcdctl \
+    --cert /etc/kubernetes/pki/etcd/server.crt \
+    --key /etc/kubernetes/pki/etcd/server.key \
+    --cacert /etc/kubernetes/pki/etcd/ca.crt \
+    --write-out table \
+    member list
+
+# show the etcd endpoint status.
+etcdctl \
+    --cert /etc/kubernetes/pki/etcd/server.crt \
+    --key /etc/kubernetes/pki/etcd/server.key \
+    --cacert /etc/kubernetes/pki/etcd/ca.crt \
+    --write-out table \
+    endpoint status
+
 # list all nodes and pods.
 kubectl get nodes -o wide
 kubectl get pods -o wide --all-namespaces
